@@ -27,7 +27,7 @@ __source__: A String containing the path to the source folder. Relative or absol
 
 __replica__: A String containing the path to the destination folder. Relative or absolute path is accepted.
 
-Configuration will fail if either folder doesn't exist.
+Configuration will fail if either folder doesn't exist or if the _LOGS_ subfolder is selected as the replica directory. 
 
 ### Executing a backup
 
@@ -125,3 +125,4 @@ def traverse(self, s, r, flag=False):
     ...
     '''
 ```
+The mutual exclusion problem also introduces issues in running multiple synchronization APIs in the same location. For instance, if two scripts exist in the same folder and each is calling the synchronization API, they will be competing with each other for the log file (since both of them will be looking for the file with today's date in the _LOGS_ subfolder). 
