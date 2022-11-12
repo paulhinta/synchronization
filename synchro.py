@@ -1,5 +1,5 @@
 # IMPORTS (all default libraries)
-from os import listdir, mkdir, remove, rename, path
+from os import listdir, mkdir, remove, path
 import time
 from datetime import datetime, date
 import shutil
@@ -265,7 +265,7 @@ class Synchro():
                         " hour(s). No maximum specified on number of backup cycles, the API will run indefinitely.")
                 else:
                     print(f"Synchronization will run in ongoing mode, synchronization will occur once every {self.interval}" 
-                        " hour(s) for a maximum of {self.max} backup cycles.")
+                        f" hour(s) for a maximum of {self.max} backup cycles.")
                 print("The API can be terminated at any time by pressing CTRL+C")
                 count = 0
                 while True:
