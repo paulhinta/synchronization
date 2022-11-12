@@ -16,7 +16,7 @@ Like other APIs in Python, the synchronization API is a class. To use it, it mus
 ```python
 from synchro import Synchro
 
-s = synchro()
+s = Synchro()
 ```
 
 ### Configuration
