@@ -65,7 +65,7 @@ s.configure("source1", "folder1")
 s.run()
 s.configure("source2", "folder2")
 s.run()
-s.configure("source3", "folder3")
+s.configure("source2", "folder3")       # in one script execution, two folders are backed up to three locations
 s.run()
 s.close_api()
 ```
