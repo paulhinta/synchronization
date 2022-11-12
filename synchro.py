@@ -60,6 +60,11 @@ class Synchro():
             self.logfile.write("-"*128+"\n")
             self.logfile.write(f"Error: {replica} is not a directory. Configuration failed\n")
             self.proper = False
+        if replica=="LOGS" or replica=="./LOGS":
+            print(f"Error: LOGS cannot be the replica directory. Configuration failed")
+            self.logfile.write("-"*128+"\n")
+            self.logfile.write(f"Error: LOGS cannot be the replica. Configuration failed\n")
+            self.proper = False
         
         if self.proper:
             if mode.lower()=="o":
