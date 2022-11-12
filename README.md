@@ -6,7 +6,7 @@ This API is developed to service the backup between two folders, _source_ and _r
 
 The single mode will run one backup cycle at a time, which is more useful if the user prefers to schedule the backup of multiple at once. For instance, the user can write a script containing the backup of three different directories in single mode and schedule them using an external tool such as the Windows Task Scheduler or MacOS crontab.
 
-The ongoing mode will run a loop that will either run indefinitely or until a certain (which can be specified by the user) is reached. This may be preferred if the user wants to monitor and backup only one folder over time and has the capacity to run this script in the background of their computer. The ongoing mode can be interrupted at any time via keyboard interrupt (CTRL+C), which is handled and logged by the API.
+The ongoing mode will run a loop that will either run indefinitely or until a certain (which can be specified by the user) is reached. This may be preferred if the user wants to monitor and backup only one folder over time and has the capacity to run this script in the background of their computer. The _ongoing_ mode can be interrupted at any time via keyboard interrupt (CTRL+C), which is handled and logged by the API.
 
 ## Usage
 
