@@ -39,7 +39,7 @@ from synchro import Synchro
 s = Synchro()
 s.configure("source", "folder")
 s.run()
-s.close()
+s.close_api()
 ```
 
 Additionally, configure accepts the following optional arguments:
@@ -67,7 +67,7 @@ s.configure("source2", "folder2")
 s.run()
 s.configure("source3", "folder3")
 s.run()
-s.close()
+s.close_api()
 ```
 
 Below is an example of how to use the API in ongoing mode:
@@ -77,7 +77,7 @@ from synchro import Synchro
 s = Synchro()
 s.configure("source1", "folder1", "O", interval=4)    # The API will run a backup cycle every 4 hours, indefinitely
 s.run()
-s.close()
+s.close_api()
 ```
 
 ### How a backup works
