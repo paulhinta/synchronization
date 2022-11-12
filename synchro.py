@@ -1,4 +1,4 @@
-# IMPORTS (all PyPi libraries)
+# IMPORTS (all default libraries)
 from os import listdir, mkdir, remove, rename, path
 import time
 from datetime import datetime, date
@@ -8,9 +8,10 @@ from math import ceil
 
 # GLOBAL VARIABLES
 DEFAULT_INTERVAL = 0.5      # if ongoing mode: backup cycle occurs every 1/2 hour by default
+TIME_QUANTUM = 3600         # time quantum for ongoing mode
 # MAXIMUM_CYCLES = 100      # if ongoing mode: API ends after 100 backup cycles by default
 
-class synchronization():
+class Synchro():
     def __init__(self):
         self.logfile = None     # the current log file
         self.source = None
@@ -19,6 +20,7 @@ class synchronization():
         self.proper = True      # boolean to track if api will work (to avoid throwing excessive errors)
         self.interval = None
         self.max = -1
+        self.interrupted = False  # to keep track of interrupt has occurred
 
     def update_log(self):
         '''
@@ -41,6 +43,10 @@ class synchronization():
         '''
         Sets the logfile. Configures the API object with all its attributes.
         '''
+        if self.interrupted:
+            print("The API was previously interrupted and the API was forced to shutdown early. close_api() method failed.")
+            return None
+
         # self.logfile = open(f"./LOGS/LOG-{str(date.today()).txt}", "a")
         self.open_log()
         
@@ -220,21 +226,30 @@ class synchronization():
         '''
         Closes the logfile. More functionality may be implemented later.
         '''
-        if interrupt:
-            self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--THE SYNCHRONIZATION API HAS TERMINATED "
-                "EARLY DUE TO KEYBOARD INTERRUPT\n")
-            print("The synchronization API has terminated early due to keyboard interrupt")
-        else:
-            self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--THE SYNCHRONIZATION API HAS TERMINATED "
-                "ORGANICALLY\n")
-            print("The synchronization API has terminated")
-        if self.proper:
+        if self.interrupted:
+            print("The API was previously interrupted and the API was forced to shutdown early. close_api() method failed.")
+        elif self.proper:
+            if interrupt:
+                self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--THE SYNCHRONIZATION API HAS TERMINATED "
+                    "EARLY DUE TO KEYBOARD INTERRUPT\n")
+                print("The synchronization API has terminated early due to keyboard interrupt")
+            else:
+                self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--THE SYNCHRONIZATION API HAS TERMINATED "
+                    "ORGANICALLY\n")
+                print("The synchronization API has terminated")
+
             self.logfile.close()
+        else:
+            print("The API was misconfigured, there was nothing to close.")
     
     def run(self):
         '''
         Runs the API. Single mode: a single backup cycle occurs. Ongoing mode: a while loop occurs.
         '''
+        if self.interrupted:
+            print("The API was previously interrupted and the API was forced to shutdown early. close_api() method failed.")
+            return None
+
         if self.proper:
             self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--Synchronization started on folders "
                 "{self.source} (source), {self.replica} (replica).\n")
@@ -242,7 +257,7 @@ class synchronization():
                 print("Synchronization will run in single mode (one synchronization will happen, then API will terminate).")
                 self.traverse(self.source, self.replica, True)
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+"--Synchronization completed.\n")
-                self.close_api()
+                # self.close_api()
                 # opening and closing log file so that the user can see the logs dynamically
             else:
                 if self.max==-1:
@@ -264,10 +279,11 @@ class synchronization():
                         count+=1
                         if count==self.max:
                             break
-                        time.sleep(self.interval * 600)
+                        time.sleep(self.interval * TIME_QUANTUM)
                     except KeyboardInterrupt:
-                        print("The API will now terminate")
+                        print("The loop will now terminate")
                         self.close_api(interrupt=True)
+                        self.interrupted = True
                         break
                 if self.max != -1:
                     print(f"A total of {count} backup cycles were performed")
