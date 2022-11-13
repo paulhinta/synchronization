@@ -101,7 +101,7 @@ C:.
 Each time a backup occurs, the API will log a message informing the user of which file(s) and folders were added, deleted, or overwritten, as well as those that remained untouched. Certain errors are also logged onto the logfile and the console (terminal). The log file contains the exact timestamp at which the backup occurs; the console contains only the messages.
 
 ## Known Issues
-Currently, this API does not support mutual exclusion. This means that a file can be overwritten or deleted while it is opened by another process. Ideally, if a file is opened in another process while the API tries to modify it, it would be skipped over during this backup cycle, but I wasn't able to implement it yet. Perhaps C would have been a better language to tackle this problem in, since mutex implementation with pthreads is very simple. I'd love any feedback on this!
+Currently, this API does not support mutual exclusion. This means that a file can be overwritten or deleted while it is opened by another process. Ideally, if a file is opened in another process while the API tries to modify it, it would be skipped over during this backup cycle. This is a corner case that should always be addressed, but it likely doesn't affect the function of the API (if a user is running a cyclical, scheduled backup on _source_ into _replica_, they know that the data in the _replica_ folder will be synced up to the most up-to-date version of _source_, therefore there's no reason to be modifying the data in the _replica_ directory). 
 
 Here is an example of my latest attempt at mutual exclusion (which didn't work because it ended up skipping over all the files). It was implemented in the _for_ loops of the _traverse()_ function:
 ```python
@@ -125,4 +125,8 @@ def traverse(self, s, r, flag=False):
     ...
     '''
 ```
+I made another attempt by trying to check the current file path against all the open files using _proc.open_files()_, but this method was inconsistent.
+
 The mutual exclusion problem also introduces issues in running multiple synchronization APIs in the same location. For instance, if two scripts exist in the same folder and each is calling the synchronization API, they will be competing with each other for the log file (since both of them will be looking for the file with today's date in the _LOGS_ subfolder). 
+
+Perhaps C would have been a better language to tackle this problem in, since mutex implementation with the _pthreads_ library is robust and very simple to implement. I'd love any feedback on this!
