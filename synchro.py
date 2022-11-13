@@ -14,6 +14,13 @@ TIME_QUANTUM = 3600         # time quantum for ongoing mode
 
 class Synchro():
     def __init__(self, logpath="."):
+        """
+        Creates the Synchro object. Sets the object's path to the logfile
+
+        args: self
+        default args: logpath
+        returns: None
+        """
         self.logfile = None     # the current log file
         self.source = None
         self.replica = None
@@ -26,9 +33,12 @@ class Synchro():
         self.configured = False
 
     def update_log(self):
-        '''
+        """
         If the date has changed, closes the current log file, then creates a new one with today's date.
-        '''
+
+        args: self
+        returns: None
+        """
         if not path.exists(f"{self.logpath}/LOGS/LOG-" + str(date.today()) + ".txt"):
             self.logfile.close()
             self.logfile = open(f"{self.logpath}/LOGS/LOG-" + str(date.today()) + ".txt", "a")
@@ -36,6 +46,9 @@ class Synchro():
     def open_log(self):
         ''''
         Creates a logs directory if it doesn't exist. Creates/opens the log file corresponding to today's date.
+
+        args: self
+        returns: None
         '''
         if not path.exists(f"{self.logpath}/LOGS"):
             mkdir(f"{self.logpath}/LOGS")
@@ -44,7 +57,12 @@ class Synchro():
     
     def configure(self, source, replica, mode="s", interval=DEFAULT_INTERVAL, max=-1):
         '''
-        Sets the logfile. Configures the API object with all its attributes.
+        Assigns the current working logfile to the Synchro object.
+        Configures the API object with all its attributes.
+
+        args: self, source, replica
+        default args: mode, interval, max
+        returns: None
         '''
         if self.interrupted:
             print("The API was previously interrupted and the API was forced to shutdown early. No need to call "
@@ -114,6 +132,10 @@ class Synchro():
         '''
         Traverses the source & replica directories and conducts backup.
         Function is recursive to hit all subdirectories.
+
+        args: s, r (source and replica subdirectories)
+        default args: flag (this should be true only on the first traverse() call)
+        returns: None
         '''
         if flag:
             self.logfile.write("-"*128+"\n")
@@ -252,6 +274,10 @@ class Synchro():
     def close_api(self, interrupt=False):
         '''
         Closes the logfile. More functionality may be implemented later.
+
+        args: self
+        default args: interrupt (flag to indicate that a keyboard interrupt has occurred)
+        returns: None
         '''
         if not self.configured:
             print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--THE SYNCHRONIZATION API HAS NOT BEEN "
@@ -278,6 +304,9 @@ class Synchro():
     def run(self):
         '''
         Runs the API. Single mode: a single backup cycle occurs. Ongoing mode: a while loop occurs.
+
+        args: self
+        returns: None
         '''
         if not self.configured:
             print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--THE SYNCHRONIZATION API HAS NOT BEEN "
@@ -333,7 +362,9 @@ class Synchro():
                 " configured properly. See console log for details.")
 
 if __name__=="__main__":
-    # print("Running the API from cmd line")
+    """
+    Runs the API from command line
+    """
     cont = True
     # python synchro.py -source -replica -interval -logpath
     if len(sys.argv)!=5:
