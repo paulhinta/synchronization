@@ -46,7 +46,8 @@ class Synchro():
         Sets the logfile. Configures the API object with all its attributes.
         '''
         if self.interrupted:
-            print("The API was previously interrupted and the API was forced to shutdown early. close_api() method failed.")
+            print("The API was previously interrupted and the API was forced to shutdown early. No need to call "
+                "close_api() method.")
             return None
 
         self.open_log()
@@ -155,6 +156,9 @@ class Synchro():
 
         # copy, overwrite, or delete files
         for c in files["create"]:
+            # skip hidden files
+            if c[0]==".":
+                continue
             try:
                 shutil.copy(s+"/"+c, r)
                 x = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -167,6 +171,9 @@ class Synchro():
                     "trying to copy file from {s} to {r}\n")
 
         for c in files["overwrite"]:
+            # skip hidden files
+            if c[0]==".":
+                continue
             # first check if the files are different
             if cmp(s+"/"+c, r+"/"+c):
                 print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + f"--Overwrite of {c} in folder {r} did NOT "
@@ -197,6 +204,10 @@ class Synchro():
                     "trying to copy file from {s} to {r} during overwrite\n")
 
         for c in files["delete"]:
+            # skip hidden files
+            if c[0]==".":
+                continue
+
             try:
                 remove(c)
                 print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--Removed file {c}")
@@ -214,10 +225,10 @@ class Synchro():
                 shutil.copytree(s+"./"+d, r+"./"+d)
                 print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--Copied the tree {d} into folder {r}")
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--Copied the tree {d} into folder {r}\n")
-            except PermissionError:
-                print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--PermissionError occurred when trying to "
+            except PermissionError or FileNotFoundError as error:
+                print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--{error }occurred when trying to "
                     "copy the tree {d} into folder {r}")
-                self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--PermissionError occurred when trying to "
+                self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--{error}occurred when trying to "
                     "copy the tree {d} into folder {r}\n")
 
         for d in dirs["delete"]:
@@ -240,7 +251,8 @@ class Synchro():
         Closes the logfile. More functionality may be implemented later.
         '''
         if self.interrupted:
-            print("The API was previously interrupted and the API was forced to shutdown early. close_api() method failed.")
+            print("The API was previously interrupted and the API was forced to shutdown early. No need to call close_api() "
+                "method.")
         elif self.proper:
             if interrupt:
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--THE SYNCHRONIZATION API HAS TERMINATED "
@@ -262,7 +274,8 @@ class Synchro():
         Runs the API. Single mode: a single backup cycle occurs. Ongoing mode: a while loop occurs.
         '''
         if self.interrupted:
-            print("The API was previously interrupted and the API was forced to shutdown early. close_api() method failed.")
+            print("The API was previously interrupted and the API was forced to shutdown early. No need to call close_api() "
+                "method.")
             return None
 
         if self.proper:
@@ -287,7 +300,7 @@ class Synchro():
                     try:
                         self.traverse(self.source, self.replica, True)
                         print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+"--Synchronization occurred. The API can be terminated at"
-                            "any moment by pressing CTRL+C on the keyboard")
+                            " any moment by pressing CTRL+C on the keyboard")
                         self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+"--Synchronization completed.\n")
                         self.logfile.close()
                         self.open_log()
@@ -348,4 +361,4 @@ if __name__=="__main__":
         s = Synchro(logpath)
         s.configure(source, replica, "o", interval)
         s.run()
-
+        # s.close_api()
