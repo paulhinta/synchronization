@@ -7,7 +7,7 @@ from filecmp import cmp
 from math import ceil
 
 # GLOBAL VARIABLES
-DEFAULT_INTERVAL = 0.5      # if ongoing mode: backup cycle occurs every 1/2 hour by default
+DEFAULT_INTERVAL = 0.25     # if ongoing mode: backup cycle occurs every 1/2 hour by default
 TIME_QUANTUM = 3600         # time quantum for ongoing mode
 # MAXIMUM_CYCLES = 100      # if ongoing mode: API ends after 100 backup cycles by default
 
