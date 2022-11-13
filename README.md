@@ -135,22 +135,22 @@ Here is an example of my latest attempt at mutual exclusion (which did not work 
 # IMPORTS
 from os import rename
 '''
-...
 '''
 
-def traverse(self, s, r, flag=False):
+class Synchro():
     '''
-    ...
     '''
-    for c in files["overwrite"]:
-        try:
-            rename(c, c)
-        except OSError:
-            print(f"The file {c} is opened by another process. It will not be backed up during this cycle")
-            continue
-    '''
-    ...
-    '''
+    def traverse(self, s, r, flag=False):
+        '''
+        '''
+        for c in files["overwrite"]:
+            try:
+                rename(c, c)
+            except OSError:
+                print(f"The file {c} is opened by another process. It will not be backed up during this cycle")
+                continue
+        '''
+        '''
 ```
 I made another attempt by trying to check the current file path against all the open files using _proc.open_files()_, but this method was inconsistent.
 
