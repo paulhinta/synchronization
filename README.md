@@ -101,7 +101,7 @@ C:.
 Each time a backup occurs, the API will log a message informing the user of which file(s) and folders were added, deleted, or overwritten, as well as those that remained untouched. Certain errors are also logged onto the logfile and the console (terminal). The log file contains the exact timestamp at which the backup occurs; the console contains only the messages.
 
 ## Known Issues
-Currently, this API does not support mutual exclusion. This means that a file can be overwritten or deleted while it is opened by another process. Ideally, if a file is opened in another process while the API tries to modify it, it would be skipped over during this backup cycle, but I wasn't able to implement it yet. I'd love any feedback on this!
+Currently, this API does not support mutual exclusion. This means that a file can be overwritten or deleted while it is opened by another process. Ideally, if a file is opened in another process while the API tries to modify it, it would be skipped over during this backup cycle, but I wasn't able to implement it yet. Perhaps C would have been a better language to tackle this problem in, since mutex implementation with pthreads is very simple. I'd love any feedback on this!
 
 Here is an example of my latest attempt at mutual exclusion (which didn't work because it ended up skipping over all the files). It was implemented in the _for_ loops of the _traverse()_ function:
 ```python
