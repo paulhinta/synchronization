@@ -20,7 +20,7 @@ __replica__: A _String_ containing the path to the destination folder. Relative 
 
 __interval__: An _int_ or _float_ representing how many hours the API will wait until the next backup cycle.
 
-__logpath__: A _String_ containing the path to the _LOGS_ folder. If _LOGS_ doesn't exist in this location, it will be created as a subdirectory.
+__logpath__: A _String_ containing the path to the _LOGS_ folder. If _LOGS_ does not exist in this location, it will be created as a subdirectory.
 
 Usage:
 
@@ -43,7 +43,7 @@ s = Synchro()
 ```
 Instantiation takes one optional argument:
 
-__logpath__: A _String_ containing the path to the _LOGS_ folder. If _LOGS_ doesn't exist in this location, it will be created as a subdirectory. If this argument is not specified, the _LOGS_ folder will be created in the current working directory.
+__logpath__: A _String_ containing the path to the _LOGS_ folder. If _LOGS_ does not exist in this location, it will be created as a subdirectory. If this argument is not specified, the _LOGS_ folder will be created in the current working directory.
 
 #### Configuration
 
@@ -53,7 +53,7 @@ __source__: A String containing the path to the source folder. Relative or absol
 
 __replica__: A String containing the path to the destination folder. Relative or absolute path is accepted.
 
-Configuration will fail if either folder doesn't exist or if the _LOGS_ subfolder is selected as the replica directory.
+Configuration will fail if either folder does not exist or if the _LOGS_ subfolder is selected as the replica directory.
 
 #### Executing a backup
 
@@ -109,7 +109,7 @@ s.close_api()
 The API uses PyPi libraries to execute the backup. In comparing the two folders, it will decide which files & folders to copy from _source_ to _replica_, which ones to delete from _replica_, and which ones to overwrite (i.e. ones that have the same name). Overwritting is handled differently for files and folders. For a file that needs to be overwritten, the file will first be deleted in _replica_, then copied from _source_. For a folder that needs to be overwritten, the API will compare the contents of the folders and make decisions from there. This means that the backup process is recursive, so each subdirectory is handled.
 
 ## Backup logging
-If configuration is successful, the API will search for a folder called _LOGS_ in the _logpath_ specified by the user. If this folder doesn't exist, it will be generated. Next, it will create a textfile as the logfile and place it inside this folder; the log file's name has format _LOG-YYYY-MM-DD.txt_. Each time _run()_ is called, the API will check if the log file name should be updated (in case the date has changed); in this case, the API will close the file and generate a new one automatically. The _LOGS_ file is generated automatically in the same folder that the script is run in (not where the API resides). This means that in a script, say _test.py_, a user can call _sys_ to add the path to _synchro.py_ to the site packages and the _LOGS_ folder will be generated in the same directory as _test.py_.
+If configuration is successful, the API will search for a folder called _LOGS_ in the _logpath_ specified by the user. If this folder does not exist, it will be generated. Next, it will create a textfile as the logfile and place it inside this folder; the log file's name has format _LOG-YYYY-MM-DD.txt_. Each time _run()_ is called, the API will check if the log file name should be updated (in case the date has changed); in this case, the API will close the file and generate a new one automatically. The _LOGS_ file is generated automatically in the same folder that the script is run in (not where the API resides). This means that in a script, say _test.py_, a user can call _sys_ to add the path to _synchro.py_ to the site packages and the _LOGS_ folder will be generated in the same directory as _test.py_.
 
 ```
 C:.
@@ -122,16 +122,16 @@ C:.
             LOG-2022-11-12.txt
 ```
 
-
-Each time a backup occurs, the API will log a message containing a timestamp and information on which file(s) and folders were added, deleted, or overwritten, as well as those that remained untouched. Logging will also occur on certain user errors.
+Each time a backup occurs, the API will log a message containing a timestamp and information on which file(s) and folders were added, deleted, or overwritten, as well as those that remained untouched. Logging will also occur on certain user errors. These messages are appended onto the current working log file.
 
 ## Known Issues
-This section describes some issues that I encountered while developing this API. I'd love any feedback on this!
+This section describes some issues that I encountered while developing this API. I would love any feedback on this!
     
 ### Mutual Exclusion
-Currently, this API does not support mutual exclusion. This means that a file can be overwritten or deleted while it is opened by another process. Ideally, if a file is opened in another process while the API tries to modify it, it would be skipped over during this backup cycle. This is a corner case that should always be addressed, but it likely doesn't affect the function of the API (if a user is running a cyclical, scheduled backup on _source_ into _replica_, they know that the data in the _replica_ folder will be synced up to the most up-to-date version of _source_, therefore there's no reason to be modifying the data in the _replica_ directory). 
+Currently, this API does not support mutual exclusion. This means that a file can be overwritten or deleted while it is opened by another process. Ideally, if a file is opened in another process while the API tries to modify it, it would be skipped over during this backup cycle. This is a corner case that should always be addressed, but it likely does not affect the function of the API (if a user is running a cyclical, scheduled backup on _source_ into _replica_, they know that the data in the _replica_ folder will be synced up to the most up-to-date version of _source_, therefore there
+s no reason to be modifying the data in the _replica_ directory). 
 
-Here is an example of my latest attempt at mutual exclusion (which didn't work because it ended up skipping over all the files). It was implemented in the _for_ loops of the _traverse()_ function:
+Here is an example of my latest attempt at mutual exclusion (which did not work because it ended up skipping over all the files). It was implemented in the _for_ loops of the _traverse()_ function:
 ```python
 # IMPORTS
 from os import rename
