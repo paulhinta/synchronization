@@ -23,6 +23,7 @@ class Synchro():
         self.max = -1
         self.interrupted = False  # to keep track of interrupt has occurred
         self.logpath = logpath
+        self.configured = False
 
     def update_log(self):
         '''
@@ -104,6 +105,8 @@ class Synchro():
             else:
                 self.mode = "single"
                 print(f"Mode {mode} not recognized. Synchronization mode set to single (task scheduler mode) by default")
+
+            self.configured = True
         
     # close existing file and create a new one if the day has changed; run this in the while loop
     
@@ -250,7 +253,10 @@ class Synchro():
         '''
         Closes the logfile. More functionality may be implemented later.
         '''
-        if self.interrupted:
+        if not self.configured:
+            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--THE SYNCHRONIZATION API HAS NOT BEEN "
+                "CONFIGURED. CLOSE_API() FAILED")
+        elif self.interrupted:
             print("The API was previously interrupted and the API was forced to shutdown early. No need to call close_api() "
                 "method.")
         elif self.proper:
@@ -273,6 +279,11 @@ class Synchro():
         '''
         Runs the API. Single mode: a single backup cycle occurs. Ongoing mode: a while loop occurs.
         '''
+        if not self.configured:
+            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--THE SYNCHRONIZATION API HAS NOT BEEN "
+                    "CONFIGURED. RUN() FAILED")
+            return None
+        
         if self.interrupted:
             print("The API was previously interrupted and the API was forced to shutdown early. No need to call close_api() "
                 "method.")
