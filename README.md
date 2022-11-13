@@ -2,15 +2,19 @@
 Synchronization API to manage backups between two folders
 
 ## Description
-This API is developed to service the backup between two folders, _source_ and _replica_. This API supports two modes: _single_ and _ongoing_; usage depends on the user's preference.
-
-The single mode will run one backup cycle at a time, which is more useful if the user prefers to schedule the backup of multiple at once. For instance, the user can write a script containing the backup of three different directories in single mode and schedule them using an external tool such as the Windows Task Scheduler or MacOS crontab.
+This API is developed to service the backup between two folders, _source_ and _replica_. This API supports two modes: _ongoing_ and _single_; usage depends on the user's preference. The user is able to call the API from the command line or by including it in a Python script.
 
 The ongoing mode will run a loop that will either run indefinitely or until a certain limit (which can be specified by the user) is reached. This may be preferred if the user wants to monitor and backup only one folder over time and has the capacity to run this script in the background of their computer. The _ongoing_ mode can be interrupted at any time via keyboard interrupt (CTRL+C), which is handled and logged by the API.
 
+The single mode will run one backup cycle at a time, which is more useful if the user prefers to schedule the backup of multiple at once. For instance, the user can write a script containing the backup of three different directories in single mode and schedule them using an external tool such as the Windows Task Scheduler or MacOS crontab.
+
 ## Usage
 
-### Instantiation
+### Command Line
+
+### Python Scripting
+
+#### Instantiation
 
 Like other APIs in Python, the synchronization API is a class. To use it, it must first be instantiated. For instance:
 ```python
@@ -19,7 +23,7 @@ from synchro import Synchro
 s = Synchro()
 ```
 
-### Configuration
+#### Configuration
 
 Note that upon instantiation, the object's attributed are not assigned. This must be done by calling the method _configure()_, which takes the following parameters:
 
@@ -29,7 +33,7 @@ __replica__: A String containing the path to the destination folder. Relative or
 
 Configuration will fail if either folder doesn't exist or if the _LOGS_ subfolder is selected as the replica directory. 
 
-### Executing a backup
+#### Executing a backup
 
 The _run()_ method is used to conduct the backup. The _close_api()_ method should be called at the end of the script, otherwise the data in the backup log may not be up to date.
 
@@ -54,8 +58,7 @@ __interval__: An int representing the period (in hours) at which the backup cycl
 __max__: An int representing the maximum number of iterations (backup cycles) to run before the loop is broken. If this number is not specified, it will run indefinitely. If a float is passed, the API will take the ceiling. If a negative number or non-int/non-float is passed, the API will run indefinitely by default.
 
 
-
-The configuration is useful particularly in single mode. This allows the user to run one script to backup multiple folders. For instance:
+The _configure()_ is useful particularly useful for reconfiguring the SYnchro object based on the user's needs. This allows the user to run one script to backup multiple folders. For instance:
 
 ```python
 from synchro import Synchro
