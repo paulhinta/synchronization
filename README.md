@@ -76,11 +76,10 @@ __mode__: A _String_, "s" or "S" to represent single mode, "o" or "O" to represe
 
 __interval__: An _int_ representing the period (in hours) at which the backup cycles should occur in _ongoing_ mode. If this value is below 0.25, it is set to this upper limit (a lower bound is necessary to make sure that each backup cycle has enough time to run to completion in case the user is backing up a large directory). This parameter affects only _ongoing_ mode.
 
-
 __max__: An _int_ representing the maximum number of iterations (backup cycles) to run before the loop is broken. If this number is not specified, it will run indefinitely. If a float is passed, the API will take the ceiling. If a negative number or non-int/non-float is passed, the API will run indefinitely by default.
 
 
-The _configure()_ is useful particularly useful for reconfiguring the Synchro object based on the user's needs. This allows the user to run one script to backup multiple folders. For instance:
+The _configure()_ method is useful particularly useful for reconfiguring the Synchro object based on the user's needs. This allows the user to run one script to backup multiple folders. For instance:
 
 ```python
 from synchro import Synchro
