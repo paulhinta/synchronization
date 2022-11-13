@@ -5,6 +5,7 @@ from datetime import datetime, date
 import shutil
 from filecmp import cmp
 from math import ceil
+import sys
 
 # GLOBAL VARIABLES
 DEFAULT_INTERVAL = 0.25     # if ongoing mode: backup cycle occurs every 1/2 hour by default
@@ -12,7 +13,7 @@ TIME_QUANTUM = 3600         # time quantum for ongoing mode
 # MAXIMUM_CYCLES = 100      # if ongoing mode: API ends after 100 backup cycles by default
 
 class Synchro():
-    def __init__(self):
+    def __init__(self, logpath="."):
         self.logfile = None     # the current log file
         self.source = None
         self.replica = None
@@ -21,23 +22,24 @@ class Synchro():
         self.interval = None
         self.max = -1
         self.interrupted = False  # to keep track of interrupt has occurred
+        self.logpath = logpath
 
     def update_log(self):
         '''
         If the date has changed, closes the current log file, then creates a new one with today's date.
         '''
-        if not path.exists("./LOGS/LOG-" + str(date.today()) + ".txt"):
+        if not path.exists(f"{self.logpath}/LOGS/LOG-" + str(date.today()) + ".txt"):
             self.logfile.close()
-            self.logfile = open("./LOGS/LOG-" + str(date.today()) + ".txt", "a")
+            self.logfile = open(f"{self.logpath}/LOGS/LOG-" + str(date.today()) + ".txt", "a")
 
     def open_log(self):
         ''''
         Creates a logs directory if it doesn't exist. Creates/opens the log file corresponding to today's date.
         '''
-        if not path.exists("./LOGS"):
-            mkdir("LOGS")
+        if not path.exists(f"{self.logpath}/LOGS"):
+            mkdir(f"{self.logpath}/LOGS")
 
-        self.logfile = open("./LOGS/LOG-" + str(date.today()) + ".txt", "a")
+        self.logfile = open(f"{self.logpath}/LOGS/LOG-" + str(date.today()) + ".txt", "a")
     
     def configure(self, source, replica, mode="s", interval=DEFAULT_INTERVAL, max=-1):
         '''
@@ -47,7 +49,6 @@ class Synchro():
             print("The API was previously interrupted and the API was forced to shutdown early. close_api() method failed.")
             return None
 
-        # self.logfile = open(f"./LOGS/LOG-{str(date.today()).txt}", "a")
         self.open_log()
         
         if not path.isdir(source):
@@ -72,13 +73,13 @@ class Synchro():
                     if interval<DEFAULT_INTERVAL:
                         self.interval = DEFAULT_INTERVAL
                         print("Interval provided is too short. A default value will be used instead")
-                    elif interval>24:
-                        self.interval = 24
-                        print("Interval provided is too long. This API supports synchronization at frequency of minimum 1 time" 
-                            "per day.")
+                    # elif interval>24:
+                    #     self.interval = 24
+                    #     print("Interval provided is too long. This API supports synchronization at frequency of minimum 1 time" 
+                    #         "per day.")
                     else:
                         self.interval = interval
-                    print(f"Parameters for ongoing mode: scheduling interval set to {self.interval}")
+                    print(f"Parameters for ongoing mode: scheduling interval set to {self.interval} hour(s)")
                 else:
                     print("Error in ongoing mode interval: invalid argument for time interval. The interval will be set to a "
                         "default value.")
@@ -158,70 +159,77 @@ class Synchro():
                 shutil.copy(s+"/"+c, r)
                 x = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + f"--Created file {c} into folder {r}\n")
-                print(f"Created file {c} into folder {r}")
+                print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + f"--Created file {c} into folder {r}")
             except PermissionError:
-                print("Error: permission denied on " + c)
+                print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + f"--Error: permission denied on {c} when "
+                    "trying to copy file from {s} to {r}")
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + f"--Error: permission denied on {c} when "
-                "trying to copy file from {s} to {r}\n")
+                    "trying to copy file from {s} to {r}\n")
 
         for c in files["overwrite"]:
             # first check if the files are different
             if cmp(s+"/"+c, r+"/"+c):
-                print(f"The file {c} is the same, it will not be replaced")
+                print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + f"--Overwrite of {c} in folder {r} did NOT "
+                    "occur, since it is up to date")
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + f"--Overwrite of {c} in folder {r} did NOT "
-                "occur, since it is up to date\n")
+                    "occur, since it is up to date\n")
                 continue
 
             # next check if file is opened, continue if it is
             try:
                 remove(f"{r}/{c}")
             except OSError:
-                print(f"OS Error occurred when trying to overwrite {c} in directory {r}")
+                print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--OS Error occurred when trying to overwrite"
+                    " {c} in directory {r}")
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--OS Error occurred when trying to overwrite"
-                " {c} in directory {r}\n")
+                    " {c} in directory {r}\n")
                 continue
 
             # overwrite process is a file remove, then copy
             try:
                 shutil.copy(s + "/" + c, r)
-                print(f"Overwrote {c} in folder {r}")
+                print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + f"--Overwrote {c} in folder {r}")
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + f"--Overwrote {c} in folder {r}\n")
             except PermissionError:
-                print(f"Permission denied when copying {c} into the target folder")
+                print("%d/%m/%Y %H:%M:%S" + f"--Error: permission denied on {c} when "
+                    "trying to copy file from {s} to {r} during overwrite")
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + f"--Error: permission denied on {c} when "
-                "trying to copy file from {s} to {r} during overwrite\n")
+                    "trying to copy file from {s} to {r} during overwrite\n")
 
         for c in files["delete"]:
             try:
                 remove(c)
-                print(f"Removed file {c}")
+                print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--Removed file {c}")
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--Removed file {c}\n")
             except OSError as error:
-                print(f"OS Error occurred when trying to remove {c} in directory {r}")
+                print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--OS Error occurred when trying to remove "
+                    "{c} in directory {r}: {error}")
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--OS Error occurred when trying to remove "
-                "{c} in directory {r}: {error}\n")
+                    "{c} in directory {r}: {error}\n")
 
         # copy or delete folders
         for d in dirs["create"]:
             # these are the directories to copy completely
             try:
                 shutil.copytree(s+"./"+d, r+"./"+d)
-                print(f"Copied the tree {d} into folder {r}")
+                print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--Copied the tree {d} into folder {r}")
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--Copied the tree {d} into folder {r}\n")
             except PermissionError:
-                print(f"PermissionError occurred when trying to copy the tree {d} into folder {r}")
+                print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--PermissionError occurred when trying to "
+                    "copy the tree {d} into folder {r}")
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--PermissionError occurred when trying to "
-                "copy the tree {d} into folder {r}\n")
+                    "copy the tree {d} into folder {r}\n")
 
         for d in dirs["delete"]:
             try:
                 shutil.rmtree(d)
-                print(f"Removed directory {d}")
+                print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--Removed directory {d}")
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--Removed directory {d}\n")
             except PermissionError as error:
-                print(f"OS Error occurred when trying to remove directory {d}")
+                print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--OS Error occurred when trying to remove "
+                    "directory {d}: {error}")
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--OS Error occurred when trying to remove "
-                "directory {d}: {error}\n")
+                    "directory {d}: {error}\n")
 
         # if source and replica have matching subdirectories, traverse them iteratively
         for d in dirs["overwrite"]:
@@ -237,11 +245,13 @@ class Synchro():
             if interrupt:
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--THE SYNCHRONIZATION API HAS TERMINATED "
                     "EARLY DUE TO KEYBOARD INTERRUPT\n")
-                print("The synchronization API has terminated early due to keyboard interrupt")
+                print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--THE SYNCHRONIZATION API HAS TERMINATED "
+                    "EARLY DUE TO KEYBOARD INTERRUPT")
             else:
                 self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--THE SYNCHRONIZATION API HAS TERMINATED "
                     "ORGANICALLY\n")
-                print("The synchronization API has terminated")
+                print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--THE SYNCHRONIZATION API HAS TERMINATED "
+                    "ORGANICALLY")
 
             self.logfile.close()
         else:
@@ -261,7 +271,7 @@ class Synchro():
             if self.mode=="single":
                 print("Synchronization will run in single mode (one synchronization will happen, then API will terminate).")
                 self.traverse(self.source, self.replica, True)
-                self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+"--Synchronization completed.\n")
+                self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+"--SYNCHRONIZATION COMPLETED.\n")
                 # self.close_api()
                 # opening and closing log file so that the user can see the logs dynamically
             else:
@@ -276,8 +286,8 @@ class Synchro():
                 while True:
                     try:
                         self.traverse(self.source, self.replica, True)
-                        print("Synchronization occurred. The API can be terminated at any moment by pressing CTRL+C on the"
-                            "keyboard")
+                        print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+"--Synchronization occurred. The API can be terminated at"
+                            "any moment by pressing CTRL+C on the keyboard")
                         self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+"--Synchronization completed.\n")
                         self.logfile.close()
                         self.open_log()
@@ -286,13 +296,56 @@ class Synchro():
                             break
                         time.sleep(self.interval * TIME_QUANTUM)
                     except KeyboardInterrupt:
-                        print("The loop will now terminate")
+                        # print("The loop will now terminate")
                         self.close_api(interrupt=True)
                         self.interrupted = True
                         break
                 if self.max != -1:
                     print(f"A total of {count} backup cycles were performed")
         else:
-            self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--Tried to run the API, failed because it wasn't"
-                "configured properly. See logs for details.\n")
-            print("Tried to run the API, failed because it wasn't configured properly. See logs for details.")
+            self.logfile.write(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--Tried to run the API, failed because it was not"
+                " configured properly. See console logs for details.\n")
+            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S")+f"--Tried to run the API, failed because it was not"
+                " configured properly. See console log for details.")
+
+if __name__=="__main__":
+    # print("Running the API from cmd line")
+    cont = True
+    # python synchro.py -source -replica -interval -logpath
+    if len(sys.argv)!=5:
+        print("Usage: python synchro.py -source -replica -interval -logpath")
+        print(f"The synchronization API asks for 4 arguments, {len(sys.argv)} were provided.")
+        cont = False
+    
+    if cont:
+        try:
+            source = sys.argv[1].split("-")[1]
+        except IndexError:
+            print(f"Error on cmd argument 1: {sys.argv[1]}: format for command line argument is -<source>")
+            cont = False
+        try:
+            replica = sys.argv[2].split("-")[1]
+        except IndexError:
+            print(f"Error on cmd argument 2: {sys.argv[2]}: format for command line argument is -<replica>")
+            cont = False
+        try:
+            interval = sys.argv[3].split("-")[1]
+        except IndexError:
+            print(f"Error on cmd argument 3: {sys.argv[3]}: format for command line argument is -<interval>")
+            cont = False
+        try:
+            interval = float(interval)
+        except ValueError:
+            print(f"Error on cmd argument 3: interval argument should be a real number, not {type(interval)}")
+            cont = False
+        try:
+            logpath = sys.argv[4].split("-")[1]
+        except IndexError:
+            print(f"Error on cmd argument 4: {sys.argv[4]}: format for command line argument is -<logpath>")
+            cont = False
+
+    if cont:  
+        s = Synchro(logpath)
+        s.configure(source, replica, "o", interval)
+        s.run()
+
